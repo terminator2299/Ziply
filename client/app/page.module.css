@@ -114,6 +114,23 @@
   gap: 1.5rem;
 }
 
+.formatSelector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #a0aec0;
+}
+
+.formatSelector select {
+  background-color: #2d3748;
+  color: white;
+  border: 1px solid #4a5568;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
 .form {
   display: flex;
   flex-direction: column;

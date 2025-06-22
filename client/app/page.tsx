@@ -10,7 +10,7 @@ const TABS = [
   { label: "Convert Image Format", key: "convert" },
 ];
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://localhost:5001/api";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("compress");
@@ -27,6 +27,7 @@ export default function Home() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [convertFormat, setConvertFormat] = useState('png');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
     setResult(null);
@@ -67,8 +68,7 @@ export default function Home() {
         endpoint = `${API_URL}/convert-image`;
         if (!fileInputs.convert) throw new Error("No image selected");
         formData.append("image", fileInputs.convert);
-        // You might want to add format selection here
-        // formData.append("format", "png");
+        formData.append("format", convertFormat);
       }
 
       const res = await fetch(endpoint, { method: "POST", body: formData });
@@ -98,7 +98,6 @@ export default function Home() {
     const commonInputProps = {
       className: styles.fileInput,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, activeTab),
-      required: true,
     };
 
     let inputKey: string | number = Date.now();
@@ -128,6 +127,17 @@ export default function Home() {
           input: <input type="file" id="file-upload" accept="image/*" {...commonInputProps} key={`${inputKey}-convert`} />,
           buttonText: loading ? "Converting..." : "Convert Image",
           labelText: fileName ? `Selected: ${fileName}` : "Select image to convert",
+          extra: (
+            <div className={styles.formatSelector}>
+              <label htmlFor="format">Convert to:</label>
+              <select id="format" value={convertFormat} onChange={(e) => setConvertFormat(e.target.value)}>
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+                <option value="gif">GIF</option>
+              </select>
+            </div>
+          )
         };
       default:
         return null;
@@ -169,6 +179,7 @@ export default function Home() {
                 {currentForm.labelText}
               </label>
               {currentForm.input}
+              {currentForm.extra}
               <button type="submit" className={styles.submitButton} disabled={loading}>
                 {currentForm.buttonText}
               </button>
