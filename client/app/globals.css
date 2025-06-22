@@ -1,6 +1,30 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --max-width: 1100px;
+  --border-radius: 12px;
+
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 10, 20;
+  --background-end-rgb: 15, 15, 30;
+
+  --primary-glow: #0070f3;
+  --secondary-glow: #142031;
+
+  --tile-start-rgb: 2, 5, 10;
+  --tile-end-rgb: 20, 25, 40;
+  --tile-border: conic-gradient(
+    #ffffff80,
+    #ffffff40,
+    #ffffff30,
+    #ffffff20,
+    #ffffff10,
+    #ffffff10,
+    #ffffff80
+  );
+
+  --callout-rgb: 20, 20, 20;
+  --callout-border-rgb: 108, 108, 108;
+  --card-rgb: 180, 180, 180;
+  --card-border-rgb: 100, 100, 100;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,8 +41,13 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

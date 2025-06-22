@@ -1,95 +1,192 @@
-import Image from "next/image";
+"use client";
+
+// This file should be renamed to page.client.tsx to enable Client Component features.
+import { useState } from "react";
 import styles from "./page.module.css";
 
+const TABS = [
+  { label: "Compress Image", key: "compress" },
+  { label: "Merge PDFs", key: "merge" },
+  { label: "Convert Image Format", key: "convert" },
+];
+
+const API_URL = "http://localhost:5000/api";
+
 export default function Home() {
+  const [activeTab, setActiveTab] = useState("compress");
+  const [fileInputs, setFileInputs] = useState<{
+    compress: File | null;
+    merge: File[];
+    convert: File | null;
+  }>({
+    compress: null,
+    merge: [],
+    convert: null,
+  });
+  const [result, setResult] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
+    setResult(null);
+    setDownloadUrl(null);
+    setFileName(null);
+    if (tab === "merge") {
+      const files = Array.from(e.target.files || []);
+      setFileInputs((prev) => ({ ...prev, merge: files }));
+      if (files.length > 0) {
+        setFileName(`${files.length} PDF(s) selected`);
+      }
+    } else {
+      const file = e.target.files?.[0] || null;
+      setFileInputs((prev) => ({ ...prev, [tab]: file }));
+      if (file) {
+        setFileName(file.name);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResult(null);
+    setDownloadUrl(null);
+    setLoading(true);
+    try {
+      let endpoint = "";
+      const formData = new FormData();
+      if (activeTab === "compress") {
+        endpoint = `${API_URL}/compress-image`;
+        if (!fileInputs.compress) throw new Error("No image selected");
+        formData.append("image", fileInputs.compress);
+      } else if (activeTab === "merge") {
+        endpoint = `${API_URL}/merge-pdf`;
+        if (!fileInputs.merge.length) throw new Error("No PDFs selected");
+        fileInputs.merge.forEach((file) => formData.append("pdfs", file));
+      } else if (activeTab === "convert") {
+        endpoint = `${API_URL}/convert-image`;
+        if (!fileInputs.convert) throw new Error("No image selected");
+        formData.append("image", fileInputs.convert);
+        // You might want to add format selection here
+        // formData.append("format", "png");
+      }
+
+      const res = await fetch(endpoint, { method: "POST", body: formData });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Server error");
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (contentType && (contentType.includes("application/pdf") || contentType.startsWith("image/"))) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setDownloadUrl(url);
+        setResult("Success! Click the link below to download your file.");
+      } else {
+        const data = await res.json();
+        setResult(data.message || "Operation completed.");
+      }
+    } catch (err: any) {
+      setResult(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderForm = () => {
+    const commonInputProps = {
+      className: styles.fileInput,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, activeTab),
+      required: true,
+    };
+
+    let inputKey: string | number = Date.now();
+    let labelText = "Click or drag file to this area to upload";
+    if (fileName) {
+        labelText = fileName;
+    }
+
+    switch (activeTab) {
+      case "compress":
+        return {
+          title: "Upload Image to Compress",
+          input: <input type="file" id="file-upload" accept="image/*" {...commonInputProps} key={`${inputKey}-compress`} />,
+          buttonText: loading ? "Compressing..." : "Compress Image",
+          labelText: fileName ? `Selected: ${fileName}` : "Select image to compress",
+        };
+      case "merge":
+        return {
+          title: "Upload PDFs to Merge",
+          input: <input type="file" id="file-upload" accept="application/pdf" multiple {...commonInputProps} key={`${inputKey}-merge`} />,
+          buttonText: loading ? "Merging..." : "Merge PDFs",
+          labelText: fileName ? `Selected: ${fileName}` : "Select PDFs to merge",
+        };
+      case "convert":
+        return {
+          title: "Upload Image to Convert",
+          input: <input type="file" id="file-upload" accept="image/*" {...commonInputProps} key={`${inputKey}-convert`} />,
+          buttonText: loading ? "Converting..." : "Convert Image",
+          labelText: fileName ? `Selected: ${fileName}` : "Select image to convert",
+        };
+      default:
+        return null;
+    }
+  };
+
+  const currentForm = renderForm();
+
   return (
     <div className={styles.page}>
+      <header className={styles.topBar}>
+        <span className={styles.brand}>Ziply</span>
+      </header>
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+        <div className={styles.tagline}>
+          Your one-stop shop for quick file conversions and optimizations.
         </div>
+        <div className={styles.tabContainer}>
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setActiveTab(tab.key);
+                setFileName(null);
+                setResult(null);
+                setDownloadUrl(null);
+              }}
+              className={activeTab === tab.key ? styles.tabButtonActive : styles.tabButton}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.formContainer}>
+          {currentForm && (
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <label htmlFor="file-upload" className={styles.fileInputLabel}>
+                {currentForm.labelText}
+              </label>
+              {currentForm.input}
+              <button type="submit" className={styles.submitButton} disabled={loading}>
+                {currentForm.buttonText}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {result && (
+          <div className={result.startsWith("Success") ? styles.resultSuccess : styles.resultError}>
+            {result}
+            {downloadUrl && (
+              <a href={downloadUrl} download className={styles.downloadLink}>
+                Download File
+              </a>
+            )}
+          </div>
+        )}
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
