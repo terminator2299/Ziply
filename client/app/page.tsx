@@ -3,6 +3,7 @@
 // This file should be renamed to page.client.tsx to enable Client Component features.
 import { useState } from "react";
 import styles from "./page.module.css";
+import { ThemeSwitcher } from "../components/ThemeSwitcher";
 
 const TABS = [
   { label: "Compress Image", key: "compress" },
@@ -150,6 +151,9 @@ export default function Home() {
     <div className={styles.page}>
       <header className={styles.topBar}>
         <span className={styles.brand}>Ziply</span>
+        <div className={styles.themeSwitcherContainer}>
+          <ThemeSwitcher />
+        </div>
       </header>
       <main className={styles.main}>
         <div className={styles.tagline}>

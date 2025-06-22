@@ -2,12 +2,21 @@
   --max-width: 1100px;
   --border-radius: 12px;
 
+  /* Dark Theme (Default) */
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 10, 10, 20;
   --background-end-rgb: 15, 15, 30;
-
   --primary-glow: #0070f3;
   --secondary-glow: #142031;
+  --tab-bg: #1a202c;
+  --tab-color: #a0aec0;
+  --form-bg: #111827;
+  --form-border: #2d3748;
+  --input-bg: #2d3748;
+  --input-border: #4a5568;
+  --input-color: white;
+  --brand-text: #fff;
+  --tagline-color: #a0aec0;
 
   --tile-start-rgb: 2, 5, 10;
   --tile-end-rgb: 20, 25, 40;
@@ -25,6 +34,24 @@
   --callout-border-rgb: 108, 108, 108;
   --card-rgb: 180, 180, 180;
   --card-border-rgb: 100, 100, 100;
+}
+
+[data-theme="light"] {
+  /* Light Theme */
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 240, 242, 245;
+  --background-end-rgb: 220, 225, 230;
+  --primary-glow: #005bb5;
+  --secondary-glow: #e0e5ec;
+  --tab-bg: #e2e8f0;
+  --tab-color: #4a5568;
+  --form-bg: #ffffff;
+  --form-border: #cbd5e0;
+  --input-bg: #edf2f7;
+  --input-border: #cbd5e0;
+  --input-color: #2d3748;
+  --brand-text: #000;
+  --tagline-color: #4a5568;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -51,6 +78,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 * {

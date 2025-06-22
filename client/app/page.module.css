@@ -4,24 +4,31 @@
   left: 0;
   width: 100vw;
   height: 64px;
-  background: rgba(10, 10, 20, 0.95);
+  background: rgba(var(--background-start-rgb), 0.85);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   z-index: 100;
   box-shadow: 0 2px 16px 0 rgba(0,0,0,0.12);
+  padding: 0 2.5rem;
 }
 
 .brand {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  margin-left: 2.5rem;
-  background: linear-gradient(90deg, #007cf0, #00dfd8);
+  font-size: 2.7rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #007cf0 10%, #00dfd8 50%, #ff0080 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px #007cf088);
+  filter: drop-shadow(0 4px 16px #00dfd888) drop-shadow(0 2px 8px #007cf088);
+  line-height: 1.1;
+}
+
+.themeSwitcherContainer {
+  /* Positioned by flexbox in .topBar */
 }
 
 .page {
@@ -78,9 +85,10 @@
 .tabContainer {
   display: flex;
   gap: 1rem;
-  background-color: #1a202c; /* A dark gray for tab background */
+  background-color: var(--tab-bg);
   padding: 0.5rem;
   border-radius: var(--border-radius);
+  transition: background-color 0.3s ease;
 }
 
 .tabButton {
@@ -88,7 +96,7 @@
   border-radius: 8px;
   border: none;
   background-color: transparent;
-  color: #a0aec0;
+  color: var(--tab-color);
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
@@ -104,31 +112,33 @@
 }
 
 .formContainer {
-  background-color: #111827; /* A slightly lighter dark for form card */
+  background-color: var(--form-bg);
   padding: 2rem;
   border-radius: var(--border-radius);
-  border: 1px solid #2d3748;
+  border: 1px solid var(--form-border);
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .formatSelector {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #a0aec0;
+  color: var(--tagline-color);
 }
 
 .formatSelector select {
-  background-color: #2d3748;
-  color: white;
-  border: 1px solid #4a5568;
+  background-color: var(--input-bg);
+  color: var(--input-color);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .form {
@@ -148,13 +158,13 @@
 }
 
 .fileInputLabel {
-  border: 1px dashed #4a5568;
+  border: 1px dashed var(--input-border);
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
   cursor: pointer;
   width: 100%;
-  color: #a0aec0;
+  color: var(--tagline-color);
   transition: all 0.2s;
 }
 
