@@ -38,6 +38,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [convertFormat, setConvertFormat] = useState('png');
+  const [compressionQuality, setCompressionQuality] = useState(80);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const taglineTimer = setInterval(() => {
@@ -51,10 +53,19 @@ export default function Home() {
     return () => clearInterval(taglineTimer);
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
+  const clearFileState = () => {
     setResult(null);
     setDownloadUrl(null);
     setFileName(null);
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+      setImagePreviewUrl(null);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
+    clearFileState();
+
     if (tab === "merge") {
       const files = Array.from(e.target.files || []);
       setFileInputs((prev) => ({ ...prev, merge: files }));
@@ -66,6 +77,7 @@ export default function Home() {
       setFileInputs((prev) => ({ ...prev, [tab]: file }));
       if (file) {
         setFileName(file.name);
+        setImagePreviewUrl(URL.createObjectURL(file));
       }
     }
   };
@@ -82,6 +94,7 @@ export default function Home() {
         endpoint = `${API_URL}/compress-image`;
         if (!fileInputs.compress) throw new Error("No image selected");
         formData.append("image", fileInputs.compress);
+        formData.append("quality", String(compressionQuality));
       } else if (activeTab === "merge") {
         endpoint = `${API_URL}/merge-pdf`;
         if (!fileInputs.merge.length) throw new Error("No PDFs selected");
@@ -116,57 +129,68 @@ export default function Home() {
     }
   };
 
-  const renderForm = () => {
+  const renderFormContent = () => {
     const commonInputProps = {
       className: styles.fileInput,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, activeTab),
     };
+    
+    const isImageTab = activeTab === 'compress' || activeTab === 'convert';
 
-    let inputKey: string | number = Date.now();
-    let labelText = "Click or drag file to this area to upload";
-    if (fileName) {
-        labelText = fileName;
-    }
+    return (
+      <>
+        <input 
+          key={activeTab}
+          type="file" 
+          id="file-upload"
+          accept={isImageTab ? "image/*" : "application/pdf"}
+          multiple={activeTab === 'merge'}
+          {...commonInputProps} 
+        />
+        
+        {isImageTab && imagePreviewUrl ? (
+          <div className={styles.imagePreviewContainer}>
+            <img src={imagePreviewUrl} alt="Selected preview" className={styles.imagePreview} />
+          </div>
+        ) : (
+          <label htmlFor="file-upload" className={styles.fileInputLabel}>
+            {fileName || "Click or drag file to this area to upload"}
+          </label>
+        )}
 
-    switch (activeTab) {
-      case "compress":
-        return {
-          title: "Upload Image to Compress",
-          input: <input type="file" id="file-upload" accept="image/*" {...commonInputProps} key={`${inputKey}-compress`} />,
-          buttonText: loading ? "Compressing..." : "Compress Image",
-          labelText: fileName ? `Selected: ${fileName}` : "Select image to compress",
-        };
-      case "merge":
-        return {
-          title: "Upload PDFs to Merge",
-          input: <input type="file" id="file-upload" accept="application/pdf" multiple {...commonInputProps} key={`${inputKey}-merge`} />,
-          buttonText: loading ? "Merging..." : "Merge PDFs",
-          labelText: fileName ? `Selected: ${fileName}` : "Select PDFs to merge",
-        };
-      case "convert":
-        return {
-          title: "Upload Image to Convert",
-          input: <input type="file" id="file-upload" accept="image/*" {...commonInputProps} key={`${inputKey}-convert`} />,
-          buttonText: loading ? "Converting..." : "Convert Image",
-          labelText: fileName ? `Selected: ${fileName}` : "Select image to convert",
-          extra: (
-            <div className={styles.formatSelector}>
-              <label htmlFor="format">Convert to:</label>
-              <select id="format" value={convertFormat} onChange={(e) => setConvertFormat(e.target.value)}>
-                <option value="png">PNG</option>
-                <option value="jpeg">JPEG</option>
-                <option value="webp">WebP</option>
-                <option value="gif">GIF</option>
-              </select>
-            </div>
-          )
-        };
-      default:
-        return null;
-    }
+        {activeTab === 'compress' && (
+          <div className={styles.qualitySlider}>
+            <label htmlFor="quality">Compression Quality: {compressionQuality}</label>
+            <input type="range" id="quality" min="1" max="100" value={compressionQuality} onChange={(e) => setCompressionQuality(Number(e.target.value))} />
+          </div>
+        )}
+
+        {activeTab === 'convert' && (
+          <div className={styles.formatSelector}>
+            <label htmlFor="format">Convert to:</label>
+            <select id="format" value={convertFormat} onChange={(e) => setConvertFormat(e.target.value)}>
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+              <option value="gif">GIF</option>
+            </select>
+          </div>
+        )}
+      </>
+    );
   };
-
-  const currentForm = renderForm();
+  
+  const getButtonText = () => {
+    if (loading) {
+      if (activeTab === 'compress') return 'Compressing...';
+      if (activeTab === 'merge') return 'Merging...';
+      if (activeTab === 'convert') return 'Converting...';
+    }
+    if (activeTab === 'compress') return 'Compress Image';
+    if (activeTab === 'merge') return 'Merge PDFs';
+    if (activeTab === 'convert') return 'Convert Image';
+    return 'Submit';
+  }
 
   return (
     <div className={styles.page}>
@@ -186,9 +210,7 @@ export default function Home() {
               key={tab.key}
               onClick={() => {
                 setActiveTab(tab.key);
-                setFileName(null);
-                setResult(null);
-                setDownloadUrl(null);
+                clearFileState();
               }}
               className={activeTab === tab.key ? styles.tabButtonActive : styles.tabButton}
             >
@@ -198,18 +220,12 @@ export default function Home() {
         </div>
 
         <div className={styles.formContainer}>
-          {currentForm && (
             <form onSubmit={handleSubmit} className={styles.form}>
-              <label htmlFor="file-upload" className={styles.fileInputLabel}>
-                {currentForm.labelText}
-              </label>
-              {currentForm.input}
-              {currentForm.extra}
-              <button type="submit" className={styles.submitButton} disabled={loading}>
-                {currentForm.buttonText}
+              {renderFormContent()}
+              <button type="submit" className={styles.submitButton} disabled={loading || !fileName}>
+                {getButtonText()}
               </button>
             </form>
-          )}
         </div>
 
         {result && (

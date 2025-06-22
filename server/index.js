@@ -25,13 +25,14 @@ app.post('/api/compress-image', upload.single('image'), async (req, res) => {
     return res.status(400).send('No image uploaded.');
   }
 
+  const quality = Number(req.body.quality) || 80;
   const filePath = req.file.path;
   const outputFileName = `compressed-${req.file.originalname}`;
   const outputPath = path.join(__dirname, 'uploads', outputFileName);
 
   try {
     await sharp(filePath)
-      .jpeg({ quality: 50 }) // Compress JPEG to 50% quality
+      .jpeg({ quality: quality })
       .toFile(outputPath);
 
     res.download(outputPath, outputFileName, (err) => {
