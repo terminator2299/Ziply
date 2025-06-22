@@ -1,7 +1,7 @@
 "use client";
 
 // This file should be renamed to page.client.tsx to enable Client Component features.
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
 
@@ -11,10 +11,19 @@ const TABS = [
   { label: "Convert Image Format", key: "convert" },
 ];
 
+const TAGLINES = [
+  "Your one-stop shop for quick file conversions and optimizations.",
+  "Effortless Image Compression. Perfect Quality.",
+  "Merge PDFs in a Snap. Simple and Secure.",
+  "Convert Image Formats with a Single Click.",
+];
+
 const API_URL = "http://localhost:5001/api";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("compress");
+  const [taglineIndex, setTaglineIndex] = useState(0);
+  const [isTaglineVisible, setIsTaglineVisible] = useState(true);
   const [fileInputs, setFileInputs] = useState<{
     compress: File | null;
     merge: File[];
@@ -29,6 +38,18 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [convertFormat, setConvertFormat] = useState('png');
+
+  useEffect(() => {
+    const taglineTimer = setInterval(() => {
+      setIsTaglineVisible(false);
+      setTimeout(() => {
+        setTaglineIndex((prevIndex) => (prevIndex + 1) % TAGLINES.length);
+        setIsTaglineVisible(true);
+      }, 500); // Corresponds to the fade animation duration
+    }, 5000); // Change tagline every 5 seconds
+
+    return () => clearInterval(taglineTimer);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
     setResult(null);
@@ -156,8 +177,8 @@ export default function Home() {
         </div>
       </header>
       <main className={styles.main}>
-        <div className={styles.tagline}>
-          Your one-stop shop for quick file conversions and optimizations.
+        <div className={`${styles.tagline} ${isTaglineVisible ? styles.taglineVisible : ''}`}>
+          {TAGLINES[taglineIndex]}
         </div>
         <div className={styles.tabContainer}>
           {TABS.map((tab) => (

@@ -80,6 +80,13 @@
   background-clip: text;
   text-fill-color: transparent;
   filter: drop-shadow(0 2px 8px #0070f355);
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  min-height: 80px; /* Reserve space to prevent layout shift */
+}
+
+.taglineVisible {
+  opacity: 1;
 }
 
 .tabContainer {
