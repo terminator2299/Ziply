@@ -1,2 +1,77 @@
-# Ziply
-Ziply is a multifunctional, user-friendly web application that simplifies file management tasks like image compression, PDF merging, and file conversion — all in one seamless platform.
+# Ziply - Modern File Utilities
+
+Ziply is a sleek, modern, and dynamic web application designed to provide a suite of powerful and easy-to-use file manipulation tools. Built with a responsive, theme-aware interface, it offers a seamless user experience for all your file processing needs.
+
+
+## ✨ Features
+
+- **🎨 Dual-Themed Interface:** Toggle between a beautiful, modern dark mode and a clean, professional light mode. Your preference is automatically saved for your next visit.
+- **🖼️ Image Compression:** Upload any image and use the intuitive slider to select the perfect compression quality, giving you full control over the file size.
+- **📄 PDF Merging:** Combine multiple PDF files into a single, unified document with just a few clicks.
+- **🔄 Image Format Conversion:** Easily convert your images to a variety of popular formats, including PNG, JPEG, WebP, and GIF.
+- **🚀 Dynamic UI:**
+  - **Rotating Taglines:** The homepage features a dynamic, rotating tagline to keep the experience fresh and engaging.
+  - **Image Previews:** See a preview of your selected image directly in the upload area before processing.
+  - **Responsive Design:** A fully responsive layout that looks great on any device, from desktops to mobile phones.
+
+## 🛠️ Tech Stack
+
+- **Frontend:**
+  - **Next.js:** A powerful React framework for building fast and modern web applications.
+  - **React:** The core library for building the user interface.
+  - **TypeScript:** For robust, type-safe code.
+  - **CSS Modules:** For locally scoped, component-level styling.
+- **Backend:**
+  - **Express.js:** A fast and minimal web framework for Node.js, used to power our API.
+  - **`sharp`:** A high-performance Node.js library for image processing.
+  - **`pdf-lib`:** A library for creating and modifying PDF documents in JavaScript.
+  - **`multer`:** A Node.js middleware for handling `multipart/form-data`, used for file uploads.
+
+## 🚀 Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+- Node.js (v18.x or later)
+- npm
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/your-username/ziply.git
+    cd ziply
+    ```
+2.  **Install Frontend Dependencies:**
+    ```sh
+    cd client
+    npm install
+    ```
+3.  **Install Backend Dependencies:**
+    ```sh
+    cd ../server
+    npm install
+    ```
+
+### Running the Application
+
+You will need two separate terminals to run both the frontend and backend servers concurrently.
+
+1.  **Start the Backend Server:**
+    *   Navigate to the `server` directory and run:
+        ```sh
+        npm start
+        ```
+    *   The backend will be running on `http://localhost:5001`.
+
+2.  **Start the Frontend Server:**
+    *   Navigate to the `client` directory and run:
+        ```sh
+        npm run dev
+        ```
+    *   The frontend development server will start. Open your browser and go to `http://localhost:3000` to see the application.
+
+---
+
+This project was built with the goal of creating a fast, reliable, and beautiful set of tools for everyday file tasks. Enjoy!
