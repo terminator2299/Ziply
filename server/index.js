@@ -25,15 +25,31 @@ app.post('/api/compress-image', upload.single('image'), async (req, res) => {
     return res.status(400).send('No image uploaded.');
   }
 
-  const quality = Number(req.body.quality) || 80;
+  const targetSizeKB = Number(req.body.targetSizeKB) || 500;
   const filePath = req.file.path;
   const outputFileName = `compressed-${req.file.originalname}`;
   const outputPath = path.join(__dirname, 'uploads', outputFileName);
 
   try {
-    await sharp(filePath)
-      .jpeg({ quality: quality })
-      .toFile(outputPath);
+    // Start with a high quality and gradually decrease until we hit target size
+    let quality = 100;
+    let currentSize = Infinity;
+    const targetSize = targetSizeKB * 1024; // Convert KB to bytes
+
+    while (quality > 5 && currentSize > targetSize) {
+      await sharp(filePath)
+        .jpeg({ quality })
+        .toFile(outputPath);
+      
+      const stats = await fs.promises.stat(outputPath);
+      currentSize = stats.size;
+      
+      if (currentSize > targetSize) {
+        // Decrease quality more aggressively if we're far from target
+        const sizeDiff = currentSize - targetSize;
+        quality -= Math.max(5, Math.min(20, Math.floor(sizeDiff / targetSize * 30)));
+      }
+    }
 
     res.download(outputPath, outputFileName, (err) => {
       if (err) {

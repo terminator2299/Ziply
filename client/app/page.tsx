@@ -47,7 +47,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [convertFormat, setConvertFormat] = useState('png');
-  const [compressionQuality, setCompressionQuality] = useState(80);
+  const [targetSizeKB, setTargetSizeKB] = useState(500);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function Home() {
       const promises = fileInputs.compress.map(async (file) => {
         const formData = new FormData();
         formData.append("image", file);
-        formData.append("quality", String(compressionQuality));
+        formData.append("targetSizeKB", String(targetSizeKB));
 
         try {
           const res = await fetch(`${API_URL}/compress-image`, { method: "POST", body: formData });
@@ -204,8 +204,16 @@ export default function Home() {
 
         {activeTab === 'compress' && (
           <div className={styles.qualitySlider}>
-            <label htmlFor="quality">Compression Quality: {compressionQuality}</label>
-            <input type="range" id="quality" min="1" max="100" value={compressionQuality} onChange={(e) => setCompressionQuality(Number(e.target.value))} />
+            <label htmlFor="quality">Target Size: {targetSizeKB} KB</label>
+            <input 
+              type="range" 
+              id="quality" 
+              min="50" 
+              max="5000" 
+              step="50"
+              value={targetSizeKB} 
+              onChange={(e) => setTargetSizeKB(Number(e.target.value))} 
+            />
           </div>
         )}
 
