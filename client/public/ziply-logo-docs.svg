@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="20%" style="stop-color:#0070f3"/>
+      <stop offset="90%" style="stop-color:#00d4ff"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main logo shape (stylized Z with file corner) -->
+  <path d="M20 8h25l-25 24h25" 
+        stroke="url(#logoGradient)" 
+        stroke-width="4" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none"/>
+  
+  <!-- File corner fold -->
+  <path d="M35 8l5-5v5z" 
+        fill="url(#logoGradient)"/>
+  
+  <!-- Text with fixed color -->
+  <text x="55" y="27" 
+        font-family="Arial, sans-serif" 
+        font-size="24" 
+        font-weight="bold" 
+        fill="#0070f3">
+    iply
+  </text>
+</svg> 

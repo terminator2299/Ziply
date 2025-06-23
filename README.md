@@ -1,7 +1,7 @@
 # Ziply - Modern File Utilities
 
 <div align="center">
-  <img src="client/public/ziply-logo.svg" alt="Ziply Logo" width="240" height="80" style="margin: 20px 0;" />
+  <img src="client/public/ziply-logo-docs.svg" alt="Ziply Logo" width="240" height="80" style="margin: 20px 0;" />
 </div>
 
 Ziply is a sleek, modern, and dynamic web application designed to provide a suite of powerful and easy-to-use file manipulation tools. Built with a responsive, theme-aware interface, it offers a seamless user experience for all your file processing needs.
@@ -9,6 +9,10 @@ Ziply is a sleek, modern, and dynamic web application designed to provide a suit
 
 ## ✨ Features
 
+- **🔒 Privacy-First Processing:** 
+  - No user login required - your files are processed in real-time
+  - Zero data storage - all file processing happens instantly and locally
+  - Your files never leave your browser - complete privacy guaranteed
 - **🎨 Dual-Themed Interface:** Toggle between a beautiful, modern dark mode and a clean, professional light mode. Your preference is automatically saved for your next visit.
 - **🖼️ Image Compression:** Upload any image and use the intuitive slider to select the perfect compression quality, giving you full control over the file size.
 - **📄 PDF Merging:** Combine multiple PDF files into a single, unified document with just a few clicks.
