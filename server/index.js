@@ -26,28 +26,50 @@ app.post('/api/compress-image', upload.single('image'), async (req, res) => {
   }
 
   const targetSizeKB = Number(req.body.targetSizeKB) || 500;
+  const format = req.body.format || 'jpeg';
+  const supportedFormats = ['jpeg', 'webp', 'png'];
+  if (!supportedFormats.includes(format)) {
+    return res.status(400).send('Unsupported format requested.');
+  }
   const filePath = req.file.path;
-  const outputFileName = `compressed-${req.file.originalname}`;
+  const outputFileName = `compressed-${req.file.originalname}.${format}`;
   const outputPath = path.join(__dirname, 'uploads', outputFileName);
 
   try {
-    // Start with a high quality and gradually decrease until we hit target size
     let quality = 100;
     let currentSize = Infinity;
-    const targetSize = targetSizeKB * 1024; // Convert KB to bytes
+    const targetSize = targetSizeKB * 1024;
+    let buffer = await fs.promises.readFile(filePath);
+    let metadata = await sharp(buffer).metadata();
+    let width = metadata.width;
+    let height = metadata.height;
+    let minWidth = Math.max(100, Math.floor(width * 0.1));
+    let minHeight = Math.max(100, Math.floor(height * 0.1));
+    let resized = false;
 
     while (quality > 5 && currentSize > targetSize) {
-      await sharp(filePath)
-        .jpeg({ quality })
-        .toFile(outputPath);
-      
+      let sharpInstance = sharp(buffer).resize(width, height);
+      if (format === 'jpeg') {
+        sharpInstance = sharpInstance.jpeg({ quality });
+      } else if (format === 'webp') {
+        sharpInstance = sharpInstance.webp({ quality });
+      } else if (format === 'png') {
+        sharpInstance = sharpInstance.png({ quality });
+      }
+      await sharpInstance.toFile(outputPath);
       const stats = await fs.promises.stat(outputPath);
       currentSize = stats.size;
-      
       if (currentSize > targetSize) {
         // Decrease quality more aggressively if we're far from target
         const sizeDiff = currentSize - targetSize;
         quality -= Math.max(5, Math.min(20, Math.floor(sizeDiff / targetSize * 30)));
+        if (quality <= 5 && !resized && (width > minWidth && height > minHeight)) {
+          // If quality is too low, start resizing
+          width = Math.floor(width * 0.85);
+          height = Math.floor(height * 0.85);
+          resized = true;
+          quality = 80; // Reset quality a bit higher for new size
+        }
       }
     }
 
@@ -55,14 +77,13 @@ app.post('/api/compress-image', upload.single('image'), async (req, res) => {
       if (err) {
         console.error('Error sending file:', err);
       }
-      // Clean up uploaded and processed files
       fs.unlinkSync(filePath);
       fs.unlinkSync(outputPath);
     });
   } catch (error) {
     console.error('Error compressing image:', error);
     res.status(500).send('Error compressing image.');
-    fs.unlinkSync(filePath); // Clean up original upload on error
+    fs.unlinkSync(filePath);
   }
 });
 

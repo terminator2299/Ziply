@@ -326,6 +326,12 @@
   color: #0070f3;
 }
 
+.fileInputLabelDragOver {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.08);
+  color: #0070f3;
+}
+
 .submitButton {
   background-color: #0070f3;
   color: white;
@@ -373,5 +379,11 @@
   font-weight: 600;
   color: #0070f3;
   text-decoration: underline;
+}
+
+.helperText {
+  margin-top: 0.25rem;
+  color: #888;
+  font-size: 0.95em;
 }
 

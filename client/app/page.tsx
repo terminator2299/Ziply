@@ -1,7 +1,7 @@
 "use client";
 
 // This file should be renamed to page.client.tsx to enable Client Component features.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
 import { PhotoIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
@@ -50,6 +50,8 @@ export default function Home() {
   const [convertFormat, setConvertFormat] = useState('png');
   const [targetSizeKB, setTargetSizeKB] = useState(500);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const taglineTimer = setInterval(() => {
@@ -60,7 +62,20 @@ export default function Home() {
       }, 500);
     }, 5000);
 
-    return () => clearInterval(taglineTimer);
+    // Prevent default drag events on the whole page
+    const preventDefaults = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const events: (keyof WindowEventMap)[] = ["dragenter", "dragover", "dragleave", "drop"];
+    events.forEach(event => {
+      window.addEventListener(event, preventDefaults as EventListener, false);
+    });
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, preventDefaults as EventListener, false);
+      });
+    };
   }, []);
 
   const clearFileState = () => {
@@ -187,45 +202,83 @@ export default function Home() {
     const commonInputProps = {
       className: styles.fileInput,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, activeTab),
+      ref: fileInputRef,
     };
-    
     const isImageTab = activeTab === 'compress' || activeTab === 'convert';
+    const accept = isImageTab ? "image/*" : "application/pdf";
+    const multiple = activeTab === 'compress' || activeTab === 'merge';
+
+    // Drag-and-drop handlers for the label
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(true);
+    };
+    const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+    };
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      const files = Array.from(e.dataTransfer.files);
+      // Simulate file input change event
+      if (fileInputRef.current) {
+        // @ts-ignore
+        fileInputRef.current.files = e.dataTransfer.files;
+      }
+      // Call the same handler as input
+      handleFileChange({ target: { files: e.dataTransfer.files } } as any, activeTab);
+    };
 
     return (
       <>
-        <input 
+        <input
           key={activeTab}
-          type="file" 
+          type="file"
           id="file-upload"
-          accept={isImageTab ? "image/*" : "application/pdf"}
-          multiple={activeTab === 'compress' || activeTab === 'merge'}
-          {...commonInputProps} 
+          accept={accept}
+          multiple={multiple}
+          {...commonInputProps}
         />
-        
         {isImageTab && imagePreviewUrls.length > 0 ? (
           <div className={styles.imagePreviewGrid}>
             {imagePreviewUrls.map((url, index) => (
-                <img key={index} src={url} alt={`Preview ${index + 1}`} className={styles.imagePreview} />
+              <img key={index} src={url} alt={`Preview ${index + 1}`} className={styles.imagePreview} />
             ))}
           </div>
         ) : (
-          <label htmlFor="file-upload" className={styles.fileInputLabel}>
+          <label
+            htmlFor="file-upload"
+            className={
+              dragOver
+                ? `${styles.fileInputLabel} ${styles.fileInputLabelDragOver}`
+                : styles.fileInputLabel
+            }
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             {fileName || "Click or drag file(s) to this area to upload"}
           </label>
         )}
 
         {activeTab === 'compress' && (
           <div className={styles.qualitySlider}>
-            <label htmlFor="quality">Target Size: {formatTargetSize(targetSizeKB)}</label>
+            <label htmlFor="quality">Target Size: {targetSizeKB} KB</label>
             <input 
               type="range" 
               id="quality" 
-              min="50" 
+              min="20" 
               max="5000"
-              step="50"
+              step="10"
               value={targetSizeKB} 
               onChange={(e) => setTargetSizeKB(Number(e.target.value))} 
             />
+            <div className={styles.helperText}>
+              <small>
+                We&apos;ll do our best to compress your image under the selected size. Actual result may vary depending on image content and format.
+              </small>
+            </div>
           </div>
         )}
 
