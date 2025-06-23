@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
 import { PhotoIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
+import Image from 'next/image';
 
 const TABS = [
   { label: "Compress Image", key: "compress" },
@@ -273,7 +274,16 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <header className={styles.topBar}>
-        <span className={styles.brand}>Ziply</span>
+        <div className={styles.brand}>
+          <Image
+            src="/ziply-logo.svg"
+            alt="Ziply Logo"
+            width={120}
+            height={40}
+            className={styles.logo}
+            priority
+          />
+        </div>
         <div className={styles.themeSwitcherContainer}>
           <ThemeSwitcher />
         </div>
@@ -338,9 +348,7 @@ export default function Home() {
           </div>
         )}
       </main>
-      <div className={styles.copyright}>
-        © 2025 Ziply. All rights reserved.
-      </div>
+      
     </div>
   );
 }
