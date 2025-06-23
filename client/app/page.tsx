@@ -11,6 +11,7 @@ const TABS = [
   { label: "Compress Image", key: "compress" },
   { label: "Merge PDFs", key: "merge" },
   { label: "Convert Image Format", key: "convert" },
+  { label: "How to Use", key: "howto" },
 ];
 
 const TAGLINES = [
@@ -28,6 +29,61 @@ type BatchResult = {
   originalSize: number;
   compressedSize: number;
 };
+
+// HowToSteps component for the How to Use tab
+const howToData = [
+  {
+    feature: 'Compress Image',
+    steps: [
+      { icon: '🖼️', title: 'Select Tab', desc: 'Click the "Compress Image" tab.' },
+      { icon: '📤', title: 'Upload Images', desc: 'Click or drag-and-drop your images.' },
+      { icon: '🎚️', title: 'Set Target Size', desc: 'Use the slider to choose your desired file size.' },
+      { icon: '⚡', title: 'Compress', desc: 'Click "Compress Images" and wait for processing.' },
+      { icon: '⬇️', title: 'Download', desc: 'Download your compressed image(s).' },
+    ],
+  },
+  {
+    feature: 'Merge PDFs',
+    steps: [
+      { icon: '📄', title: 'Select Tab', desc: 'Click the "Merge PDFs" tab.' },
+      { icon: '📤', title: 'Upload PDFs', desc: 'Click or drag-and-drop your PDF files.' },
+      { icon: '⚡', title: 'Merge', desc: 'Click "Merge PDFs" and wait for processing.' },
+      { icon: '⬇️', title: 'Download', desc: 'Download your merged PDF.' },
+    ],
+  },
+  {
+    feature: 'Convert Image Format',
+    steps: [
+      { icon: '🖼️', title: 'Select Tab', desc: 'Click the "Convert Image Format" tab.' },
+      { icon: '📤', title: 'Upload Image', desc: 'Click or drag-and-drop your image.' },
+      { icon: '🔄', title: 'Choose Format', desc: 'Select the desired output format.' },
+      { icon: '⚡', title: 'Convert', desc: 'Click "Convert Image" and wait for processing.' },
+      { icon: '⬇️', title: 'Download', desc: 'Download your converted image.' },
+    ],
+  },
+];
+
+function HowToSteps() {
+  return (
+    <div className={styles.howToGuideWrapper}>
+      {howToData.map((section, idx) => (
+        <div key={section.feature} className={styles.howToSection}>
+          <h3 className={styles.howToFeature}>{section.feature}</h3>
+          <div className={styles.howToStepsRow}>
+            {section.steps.map((step, i) => (
+              <div key={i} className={styles.howToStepCard} style={{ animationDelay: `${i * 0.08 + idx * 0.2}s` }}>
+                <div className={styles.howToStepIcon}>{step.icon}</div>
+                <div className={styles.howToStepTitle}>{step.title}</div>
+                <div className={styles.howToStepDesc}>{step.desc}</div>
+                <div className={styles.howToStepNumber}>{i + 1}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("compress");
@@ -336,6 +392,12 @@ export default function Home() {
             className={styles.logo}
             priority
           />
+          <button
+            className={styles.howToUseButton}
+            onClick={() => setActiveTab(activeTab === 'howto' ? 'compress' : 'howto')}
+          >
+            How to Use
+          </button>
         </div>
         <div className={styles.themeSwitcherContainer}>
           <ThemeSwitcher />
@@ -345,33 +407,48 @@ export default function Home() {
         <div className={`${styles.tagline} ${isTaglineVisible ? styles.taglineVisible : ''}`}>
           {TAGLINES[taglineIndex]}
         </div>
-        <div className={styles.tabContainer}>
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key);
-                clearFileState();
-              }}
-              className={activeTab === tab.key ? styles.tabButtonActive : styles.tabButton}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.formContainer}>
-            <form onSubmit={handleSubmit} className={styles.form}>
-              {renderFormContent()}
+        {activeTab !== 'howto' && (
+          <div className={styles.tabContainer}>
+            {TABS.filter(tab => tab.key !== 'howto').map((tab) => (
               <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={isSubmitDisabled()}
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  clearFileState();
+                }}
+                className={activeTab === tab.key ? styles.tabButtonActive : styles.tabButton}
               >
-                {getButtonText()}
+                {tab.label}
               </button>
-            </form>
-        </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'howto' ? (
+          <div className={styles.formContainer}>
+            <button
+              className={styles.backToMainButton}
+              onClick={() => setActiveTab('compress')}
+            >
+              ← Back to Main
+            </button>
+            <h2>How to Use Ziply</h2>
+            <HowToSteps />
+          </div>
+        ) : (
+          <div className={styles.formContainer}>
+              <form onSubmit={handleSubmit} className={styles.form}>
+                {renderFormContent()}
+                <button
+                  type="submit"
+                  className={styles.submitButton}
+                  disabled={isSubmitDisabled()}
+                >
+                  {getButtonText()}
+                </button>
+              </form>
+          </div>
+        )}
 
         {batchResults.length > 0 && (
             <div className={styles.resultsList}>
