@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
+import { PhotoIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 
 const TABS = [
   { label: "Compress Image", key: "compress" },
@@ -20,26 +21,34 @@ const TAGLINES = [
 
 const API_URL = "http://localhost:5001/api";
 
+type BatchResult = {
+  name: string;
+  url: string;
+  originalSize: number;
+  compressedSize: number;
+};
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("compress");
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [isTaglineVisible, setIsTaglineVisible] = useState(true);
   const [fileInputs, setFileInputs] = useState<{
-    compress: File | null;
+    compress: File[];
     merge: File[];
     convert: File | null;
   }>({
-    compress: null,
+    compress: [],
     merge: [],
     convert: null,
   });
   const [result, setResult] = useState<string | null>(null);
+  const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [convertFormat, setConvertFormat] = useState('png');
   const [compressionQuality, setCompressionQuality] = useState(80);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
     const taglineTimer = setInterval(() => {
@@ -47,8 +56,8 @@ export default function Home() {
       setTimeout(() => {
         setTaglineIndex((prevIndex) => (prevIndex + 1) % TAGLINES.length);
         setIsTaglineVisible(true);
-      }, 500); // Corresponds to the fade animation duration
-    }, 5000); // Change tagline every 5 seconds
+      }, 500);
+    }, 5000);
 
     return () => clearInterval(taglineTimer);
   }, []);
@@ -57,76 +66,109 @@ export default function Home() {
     setResult(null);
     setDownloadUrl(null);
     setFileName(null);
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-      setImagePreviewUrl(null);
-    }
+    setBatchResults([]);
+    imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    setImagePreviewUrls([]);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tab: string) => {
     clearFileState();
-
-    if (tab === "merge") {
-      const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []);
+    
+    if (tab === "compress") {
+        setFileInputs((prev) => ({ ...prev, compress: files }));
+        if (files.length > 0) {
+            setFileName(`${files.length} image(s) selected`);
+            const urls = files.map(file => URL.createObjectURL(file));
+            setImagePreviewUrls(urls);
+        }
+    } else if (tab === "merge") {
       setFileInputs((prev) => ({ ...prev, merge: files }));
       if (files.length > 0) {
         setFileName(`${files.length} PDF(s) selected`);
       }
     } else {
-      const file = e.target.files?.[0] || null;
-      setFileInputs((prev) => ({ ...prev, [tab]: file }));
+      const file = files[0] || null;
+      setFileInputs((prev) => ({ ...prev, convert: file }));
       if (file) {
         setFileName(file.name);
-        setImagePreviewUrl(URL.createObjectURL(file));
+        const url = URL.createObjectURL(file);
+        setImagePreviewUrls([url]);
       }
     }
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setResult(null);
-    setDownloadUrl(null);
+    clearFileState();
     setLoading(true);
-    try {
-      let endpoint = "";
-      const formData = new FormData();
-      if (activeTab === "compress") {
-        endpoint = `${API_URL}/compress-image`;
-        if (!fileInputs.compress) throw new Error("No image selected");
-        formData.append("image", fileInputs.compress);
+
+    if (activeTab === 'compress') {
+      const promises = fileInputs.compress.map(async (file) => {
+        const formData = new FormData();
+        formData.append("image", file);
         formData.append("quality", String(compressionQuality));
-      } else if (activeTab === "merge") {
-        endpoint = `${API_URL}/merge-pdf`;
-        if (!fileInputs.merge.length) throw new Error("No PDFs selected");
-        fileInputs.merge.forEach((file) => formData.append("pdfs", file));
-      } else if (activeTab === "convert") {
-        endpoint = `${API_URL}/convert-image`;
-        if (!fileInputs.convert) throw new Error("No image selected");
-        formData.append("image", fileInputs.convert);
-        formData.append("format", convertFormat);
-      }
 
-      const res = await fetch(endpoint, { method: "POST", body: formData });
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Server error");
-      }
+        try {
+          const res = await fetch(`${API_URL}/compress-image`, { method: "POST", body: formData });
+          if (!res.ok) {
+            throw new Error(`Failed for ${file.name}`);
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          return {
+            name: file.name,
+            url,
+            originalSize: file.size,
+            compressedSize: blob.size,
+          };
+        } catch (error) {
+          console.error(error);
+          return null;
+        }
+      });
 
-      const contentType = res.headers.get("content-type");
-      if (contentType && (contentType.includes("application/pdf") || contentType.startsWith("image/"))) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        setDownloadUrl(url);
-        setResult("Success! Click the link below to download your file.");
-      } else {
-        const data = await res.json();
-        setResult(data.message || "Operation completed.");
-      }
-    } catch (err: any) {
-      setResult(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+      const results = await Promise.all(promises);
+      setBatchResults(results.filter(Boolean) as BatchResult[]);
+      setResult(`${results.filter(Boolean).length} images compressed.`);
+
+    } else {
+        // ... existing single-file logic for merge and convert
+        try {
+            let endpoint = "";
+            const formData = new FormData();
+             if (activeTab === "merge") {
+                endpoint = `${API_URL}/merge-pdf`;
+                if (!fileInputs.merge.length) throw new Error("No PDFs selected");
+                fileInputs.merge.forEach((file) => formData.append("pdfs", file));
+            } else if (activeTab === "convert") {
+                endpoint = `${API_URL}/convert-image`;
+                if (!fileInputs.convert) throw new Error("No image selected");
+                formData.append("image", fileInputs.convert);
+                formData.append("format", convertFormat);
+            }
+
+            const res = await fetch(endpoint, { method: "POST", body: formData });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Server error");
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (contentType && (contentType.includes("application/pdf") || contentType.startsWith("image/"))) {
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                setDownloadUrl(url);
+                setResult("Success! Click the link below to download your file.");
+            } else {
+                const data = await res.json();
+                setResult(data.message || "Operation completed.");
+            }
+        } catch (err: any) {
+            setResult(err.message || "Something went wrong");
+        }
     }
+    setLoading(false);
   };
 
   const renderFormContent = () => {
@@ -144,17 +186,19 @@ export default function Home() {
           type="file" 
           id="file-upload"
           accept={isImageTab ? "image/*" : "application/pdf"}
-          multiple={activeTab === 'merge'}
+          multiple={activeTab === 'compress' || activeTab === 'merge'}
           {...commonInputProps} 
         />
         
-        {isImageTab && imagePreviewUrl ? (
-          <div className={styles.imagePreviewContainer}>
-            <img src={imagePreviewUrl} alt="Selected preview" className={styles.imagePreview} />
+        {isImageTab && imagePreviewUrls.length > 0 ? (
+          <div className={styles.imagePreviewGrid}>
+            {imagePreviewUrls.map((url, index) => (
+                <img key={index} src={url} alt={`Preview ${index + 1}`} className={styles.imagePreview} />
+            ))}
           </div>
         ) : (
           <label htmlFor="file-upload" className={styles.fileInputLabel}>
-            {fileName || "Click or drag file to this area to upload"}
+            {fileName || "Click or drag file(s) to this area to upload"}
           </label>
         )}
 
@@ -186,10 +230,19 @@ export default function Home() {
       if (activeTab === 'merge') return 'Merging...';
       if (activeTab === 'convert') return 'Converting...';
     }
-    if (activeTab === 'compress') return 'Compress Image';
+    if (activeTab === 'compress') return 'Compress Images';
     if (activeTab === 'merge') return 'Merge PDFs';
     if (activeTab === 'convert') return 'Convert Image';
     return 'Submit';
+  }
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
   return (
@@ -222,20 +275,41 @@ export default function Home() {
         <div className={styles.formContainer}>
             <form onSubmit={handleSubmit} className={styles.form}>
               {renderFormContent()}
-              <button type="submit" className={styles.submitButton} disabled={loading || !fileName}>
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={loading || (activeTab === 'convert' ? !fileInputs.convert : fileInputs[activeTab as 'compress' | 'merge'].length === 0)}
+              >
                 {getButtonText()}
               </button>
             </form>
         </div>
 
-        {result && (
+        {batchResults.length > 0 && (
+            <div className={styles.resultsList}>
+                <h3>Compression Results</h3>
+                {batchResults.map((item, index) => (
+                    <div key={index} className={styles.resultItem}>
+                        <PhotoIcon className={styles.resultItemIcon} />
+                        <span className={styles.resultItemName}>{item.name}</span>
+                        <span className={styles.sizeInfo}>
+                            {formatBytes(item.originalSize)} → <strong>{formatBytes(item.compressedSize)}</strong>
+                        </span>
+                        <a href={item.url} download={item.name} className={styles.downloadButton}>
+                            <DocumentArrowDownIcon />
+                            <span>Download</span>
+                        </a>
+                    </div>
+                ))}
+            </div>
+        )}
+
+        {result && downloadUrl && (
           <div className={result.startsWith("Success") ? styles.resultSuccess : styles.resultError}>
             {result}
-            {downloadUrl && (
-              <a href={downloadUrl} download className={styles.downloadLink}>
-                Download File
-              </a>
-            )}
+            <a href={downloadUrl} download className={styles.downloadLink}>
+              Download File
+            </a>
           </div>
         )}
       </main>
