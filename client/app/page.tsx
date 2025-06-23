@@ -87,7 +87,7 @@ export default function Home() {
       if (files.length > 0) {
         setFileName(`${files.length} PDF(s) selected`);
       }
-    } else {
+    } else if (tab === "convert") {
       const file = files[0] || null;
       setFileInputs((prev) => ({ ...prev, convert: file }));
       if (file) {
@@ -112,7 +112,8 @@ export default function Home() {
         try {
           const res = await fetch(`${API_URL}/compress-image`, { method: "POST", body: formData });
           if (!res.ok) {
-            throw new Error(`Failed for ${file.name}`);
+            const errorText = await res.text();
+            throw new Error(errorText || `Failed for ${file.name}`);
           }
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
@@ -122,16 +123,19 @@ export default function Home() {
             originalSize: file.size,
             compressedSize: blob.size,
           };
-        } catch (error) {
-          console.error(error);
+        } catch (error: any) {
+          console.error(`Error processing ${file.name}:`, error);
+          setResult(error.message || "Something went wrong");
           return null;
         }
       });
 
       const results = await Promise.all(promises);
-      setBatchResults(results.filter(Boolean) as BatchResult[]);
-      setResult(`${results.filter(Boolean).length} images compressed.`);
-
+      const successfulResults = results.filter(Boolean) as BatchResult[];
+      setBatchResults(successfulResults);
+      if (successfulResults.length > 0) {
+        setResult(`${successfulResults.length} images compressed.`);
+      }
     } else {
         // ... existing single-file logic for merge and convert
         try {
@@ -171,6 +175,13 @@ export default function Home() {
     setLoading(false);
   };
 
+  const formatTargetSize = (sizeInKB: number) => {
+    if (sizeInKB >= 1000) {
+      return `${(sizeInKB / 1000).toFixed(1)} MB`;
+    }
+    return `${sizeInKB} KB`;
+  };
+
   const renderFormContent = () => {
     const commonInputProps = {
       className: styles.fileInput,
@@ -204,12 +215,12 @@ export default function Home() {
 
         {activeTab === 'compress' && (
           <div className={styles.qualitySlider}>
-            <label htmlFor="quality">Target Size: {targetSizeKB} KB</label>
+            <label htmlFor="quality">Target Size: {formatTargetSize(targetSizeKB)}</label>
             <input 
               type="range" 
               id="quality" 
               min="50" 
-              max="5000" 
+              max="5000"
               step="50"
               value={targetSizeKB} 
               onChange={(e) => setTargetSizeKB(Number(e.target.value))} 
@@ -234,7 +245,7 @@ export default function Home() {
   
   const getButtonText = () => {
     if (loading) {
-      if (activeTab === 'compress') return 'Compressing...';
+      if (activeTab === 'compress') return 'Compressing Images...';
       if (activeTab === 'merge') return 'Merging...';
       if (activeTab === 'convert') return 'Converting...';
     }
@@ -252,6 +263,12 @@ export default function Home() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
+
+  const isSubmitDisabled = () => {
+    if (loading) return true;
+    if (activeTab === 'convert') return !fileInputs.convert;
+    return (fileInputs[activeTab as 'compress' | 'merge']).length === 0;
+  };
 
   return (
     <div className={styles.page}>
@@ -286,7 +303,7 @@ export default function Home() {
               <button
                 type="submit"
                 className={styles.submitButton}
-                disabled={loading || (activeTab === 'convert' ? !fileInputs.convert : fileInputs[activeTab as 'compress' | 'merge'].length === 0)}
+                disabled={isSubmitDisabled()}
               >
                 {getButtonText()}
               </button>
@@ -321,6 +338,9 @@ export default function Home() {
           </div>
         )}
       </main>
+      <div className={styles.copyright}>
+        © 2025 Ziply. All rights reserved.
+      </div>
     </div>
   );
 }
