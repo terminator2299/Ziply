@@ -7,10 +7,14 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const port = 5001;
+const port = process.env.PORT || 5001;
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://ziply-frontend.onrender.com',
+    'https://ziply-taze.onrender.com'
+  ],
   optionsSuccessStatus: 200 // For legacy browser support
 };
 
