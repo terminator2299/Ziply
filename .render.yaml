@@ -21,4 +21,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        value: https://ziply-backend.onrender.com 
+        value: https://ziply-backend.onrender.com # Render deployment configuration
