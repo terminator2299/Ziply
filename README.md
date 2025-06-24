@@ -51,19 +51,32 @@ To get a local copy up and running, follow these simple steps.
     git clone https://github.com/your-username/ziply.git
     cd ziply
     ```
-2.  **Install Frontend Dependencies:**
+2.  **Install all dependencies (recommended):**
     ```sh
-    cd client
-    npm install
+    npm run install-all
     ```
-3.  **Install Backend Dependencies:**
+    
+    Or install manually:
     ```sh
-    cd ../server
+    # Install root dependencies
     npm install
+    
+    # Install frontend dependencies
+    cd client && npm install
+    
+    # Install backend dependencies
+    cd ../server && npm install
     ```
 
 ### Running the Application
 
+#### Option 1: Using Root Scripts (Recommended)
+```sh
+# Start both frontend and backend concurrently
+npm run dev
+```
+
+#### Option 2: Separate Terminals
 You will need two separate terminals to run both the frontend and backend servers concurrently.
 
 1.  **Start the Backend Server:**
@@ -79,6 +92,24 @@ You will need two separate terminals to run both the frontend and backend server
         npm run dev
         ```
     *   The frontend development server will start. Open your browser and go to `http://localhost:3000` to see the application.
+
+## 🚀 Deployment
+
+### Render Deployment
+
+This project is configured for easy deployment on Render. The root `package.json` includes the necessary build scripts.
+
+1. **Connect your GitHub repository to Render**
+2. **Create a new Web Service**
+3. **Configure the following settings:**
+   - **Build Command:** `npm run build`
+   - **Start Command:** `npm start`
+   - **Environment:** Node.js
+
+The build process will automatically:
+- Install all dependencies
+- Build the Next.js frontend
+- Set up the Express.js backend
 
 ---
 

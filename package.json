@@ -1,0 +1,21 @@
+{
+  "name": "ziply",
+  "version": "1.0.0",
+  "description": "A minimal and dynamic web app for compressing images, merging PDFs, and converting image formats",
+  "main": "server/index.js",
+  "scripts": {
+    "build": "npm install && cd client && npm install && npm run build",
+    "start": "cd server && npm install && npm start",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "keywords": ["image-compression", "pdf-merge", "image-conversion", "nextjs", "express"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
