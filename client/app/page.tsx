@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
-import { PhotoIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon, DocumentArrowDownIcon, ShieldCheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from 'next/image';
 
 const TABS = [
@@ -85,10 +85,79 @@ function HowToSteps() {
   );
 }
 
+// Privacy Policy Modal Component
+function PrivacyPolicyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitle}>
+            <ShieldCheckIcon className={styles.modalIcon} />
+            <h2>Privacy Policy</h2>
+          </div>
+          <button className={styles.modalCloseButton} onClick={onClose}>
+            <XMarkIcon />
+          </button>
+        </div>
+        <div className={styles.modalBody}>
+          <div className={styles.privacySection}>
+            <h3>🔒 Your Data is Safe</h3>
+            <p>
+              Ziply processes all files locally in your browser. No images, PDFs, or any files are uploaded to our servers.
+            </p>
+          </div>
+          
+          <div className={styles.privacySection}>
+            <h3>⚡ Serverless Processing</h3>
+            <p>
+              All file operations happen entirely in your browser using modern web technologies. This means:
+            </p>
+            <ul>
+              <li>No files are sent to external servers</li>
+              <li>No data is stored or logged</li>
+              <li>Complete privacy and security</li>
+              <li>Instant processing without network delays</li>
+            </ul>
+          </div>
+          
+          <div className={styles.privacySection}>
+            <h3>🛡️ What We Don't Do</h3>
+            <p>
+              We never:
+            </p>
+            <ul>
+              <li>Upload your files to our servers</li>
+              <li>Store or log any file data</li>
+              <li>Share your files with third parties</li>
+              <li>Track your file processing activities</li>
+            </ul>
+          </div>
+          
+          <div className={styles.privacySection}>
+            <h3>✅ What We Do</h3>
+            <p>
+              We provide:
+            </p>
+            <ul>
+              <li>Fast, local file processing</li>
+              <li>High-quality compression and conversion</li>
+              <li>Secure, private file handling</li>
+              <li>No registration or personal data required</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("compress");
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [isTaglineVisible, setIsTaglineVisible] = useState(true);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [fileInputs, setFileInputs] = useState<{
     compress: File[];
     merge: File[];
@@ -398,6 +467,12 @@ export default function Home() {
           >
             How to Use
           </button>
+          <button
+            className={styles.privacyPolicyButton}
+            onClick={() => setShowPrivacyPolicy(true)}
+          >
+            Privacy Policy
+          </button>
         </div>
         <div className={styles.themeSwitcherContainer}>
           <ThemeSwitcher />
@@ -479,6 +554,10 @@ export default function Home() {
         )}
       </main>
       
+      <PrivacyPolicyModal 
+        isOpen={showPrivacyPolicy} 
+        onClose={() => setShowPrivacyPolicy(false)} 
+      />
     </div>
   );
 }

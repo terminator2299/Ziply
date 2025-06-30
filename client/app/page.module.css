@@ -526,3 +526,153 @@
   color: #005bb5;
 }
 
+.privacyPolicyButton {
+  margin-left: 1rem;
+  padding: 0.5rem 1.2rem;
+  background: transparent;
+  color: var(--brand-text);
+  border: 2px solid var(--form-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.privacyPolicyButton:hover {
+  background: var(--form-bg);
+  border-color: #0070f3;
+  color: #0070f3;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--form-bg);
+  border-radius: 16px;
+  border: 1px solid var(--form-border);
+  max-width: 600px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--form-border);
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modalTitle h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-text);
+}
+
+.modalIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #0070f3;
+}
+
+.modalCloseButton {
+  background: none;
+  border: none;
+  color: var(--tagline-color);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.modalCloseButton:hover {
+  background: var(--form-border);
+  color: var(--brand-text);
+}
+
+.modalCloseButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.modalBody {
+  padding: 2rem;
+}
+
+.privacySection {
+  margin-bottom: 2rem;
+}
+
+.privacySection:last-child {
+  margin-bottom: 0;
+}
+
+.privacySection h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-text);
+  margin-bottom: 0.75rem;
+}
+
+.privacySection p {
+  color: var(--tagline-color);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.privacySection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.privacySection li {
+  color: var(--tagline-color);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.privacySection li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #0070f3;
+  font-weight: bold;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
