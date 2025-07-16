@@ -24,6 +24,22 @@ Ziply is a sleek, modern, and dynamic web application designed to provide a suit
   - **Image Previews:** See a preview of your selected image directly in the upload area before processing.
   - **Responsive Design:** A fully responsive layout that looks great on any device, from desktops to mobile phones.
 
+## 💬 FAQ Bot
+
+A beautiful, modern FAQ chatbot is available on every page:
+
+- 💬 **Floating Chat Button:** Bottom-right corner, always accessible.
+- 🪟 **Auto-Popup:** The chat window opens automatically on the user's first visit each session.
+- ❓ **Suggested Questions:** Users can click on common questions like "What's special in Ziply?", "Who developed Ziply?", and "What are the tech stacks of this website?"
+- 💡 **Instant Answers:** Clicking a question shows a friendly, instant answer.
+- 🎨 **Modern UI:** Glassmorphic design, gradients, smooth animations, and dark mode support.
+- 🌓 **Theme Aware:** Looks great in both light and dark themes.
+- 🖱️ **User Control:** Users can close the chat and reopen it anytime with the button.
+
+This feature is implemented in `client/components/ChatBot.tsx` and `client/components/ChatBot.module.css`.
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Frontend:**
