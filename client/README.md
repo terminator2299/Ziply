@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+---
+
+## ✨ FAQ Bot Feature
+
+A beautiful, modern FAQ chatbot is available on every page:
+
+- 💬 **Floating Chat Button:** Bottom-right corner, always accessible.
+- 🪟 **Auto-Popup:** The chat window opens automatically on the user's first visit each session.
+- ❓ **Suggested Questions:** Users can click on common questions like "What's special in Ziply?", "Who developed Ziply?", and "What are the tech stacks of this website?"
+- 💡 **Instant Answers:** Clicking a question shows a friendly, instant answer.
+- 🎨 **Modern UI:** Glassmorphic design, gradients, smooth animations, and dark mode support.
+- 🌓 **Theme Aware:** Looks great in both light and dark themes.
+- 🖱️ **User Control:** Users can close the chat and reopen it anytime with the button.
+
+This feature is implemented in `components/ChatBot.tsx` and `components/ChatBot.module.css`.
+
+---
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
