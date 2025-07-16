@@ -6,6 +6,8 @@
 
 Ziply is a sleek, modern, and dynamic web application designed to provide a suite of powerful and easy-to-use file manipulation tools. Built with a responsive, theme-aware interface, it offers a seamless user experience for all your file processing needs.
 
+**Try it here 👉🏻 [Ziply](https://ziply-frontend.onrender.com/)**
+
 
 ## ✨ Features
 
